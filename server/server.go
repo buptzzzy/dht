@@ -18,14 +18,15 @@ func Run(node *chord.Node, db *sql.DB, port string) {
 	idResp = new(idResponse)
 	nodeGlobal = node
 	dbGlobal = db
-	http.HandleFunc("dht/register", IdentityRegisterHandler)
-	http.HandleFunc("dht/resolve", IdentityResolveHandler)
-	http.HandleFunc("dht/update", IdentityUpdateHandler)
-	http.HandleFunc("dht/delete", IdentityDeleteHandler)
-	listenAddress := "localhost:" + port
-	for {
-		http.ListenAndServe( listenAddress, nil)
-	}
+	fmt.Println("init handler!")
+	http.HandleFunc("/dht/register", IdentityRegisterHandler)
+	http.HandleFunc("/dht/resolve", IdentityResolveHandler)
+	http.HandleFunc("/dht/update", IdentityUpdateHandler)
+	http.HandleFunc("/dht/delete", IdentityDeleteHandler)
+	fmt.Println("init handler finished!")
+	//listenAddress := "localhost:" + port
+	//logrus.Infof("server: pending to listen:%s.", listenAddress)
+	http.ListenAndServe( "localhost:8888", nil)
 }
 
 type message struct {
@@ -43,6 +44,7 @@ type idResponse struct {
 var  idResp	*idResponse
 
 func IdentityRegisterHandler(w http.ResponseWriter, r *http.Request){
+	fmt.Println("init register handler!")
 	reqBody := new(message)
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {

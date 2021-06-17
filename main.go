@@ -98,14 +98,13 @@ func main() {
 		brigeNode = chord.NewInode(allConf[0].Id, allConf[0].Address)
 		//把节点注册到etcd
 		etcd.RegisterNodeToEtcd(brigeNode)
-		//退出的时候删除
-		defer etcd.DeleteNodeFromEtcd(brigeNode)
 		node, err = chord.Init(allConf[0].Id, allConf[0].Address, db)
 		if err != nil {
 			logrus.Errorf("build chord failed, err:%v.", err)
+			//退出的时候删除
+			defer etcd.DeleteNodeFromEtcd(brigeNode)
 			return
 		}
-
 	} else {
 		node, err = chord.Add(allConf[0].Id, allConf[0].Address, brigeNode, db)
 		//把
@@ -128,5 +127,8 @@ func main() {
 	var port string
 	fmt.Println("please input which port you want to watch:")
 	fmt.Scanln(&port)
-	server.Run(node, db, port)
+	for {
+		fmt.Println("listenning")
+		server.Run(node, db, port)
+	}
 }

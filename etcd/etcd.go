@@ -14,7 +14,7 @@ var client *clientv3.Client
 func Init(address []string) (err error) {
 	client, err = clientv3.New(clientv3.Config{
 		Endpoints:   address,
-		DialTimeout: time.Second * 180,
+		DialTimeout: time.Second * 5,
 	})
 	if err != nil {
 		logrus.Errorf("etcd: init etcd failed, err: %v", err)
@@ -26,7 +26,7 @@ func Init(address []string) (err error) {
 
 //拉取日志收集配置项
 func GetConf(key string) (confList []config.NodeEntry, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*180)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	//fmt.Println("key is !!!!!!!!!!!!!!!!!", key)
 	resp, err := client.Get(ctx, key)

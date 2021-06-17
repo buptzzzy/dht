@@ -23,17 +23,17 @@ func RegisterToEtcd(endpoint string) {
 	//fmt.Println(split[0])
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{endpoints},
-		DialTimeout: 180 * time.Second,
+		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
 		fmt.Println("connect to etcd failed, err:", err)
 		return
 	}
 	defer client.Close()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 120)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	var defaultMysql = `"{"user":"root","password":"111111","address":"39.105.189.17:3306","database":"dht"}`
-	sqlCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 120)
+	sqlCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 	defer cancelFunc()
 	key := "mysql_dsn_%s_conf"
 	key = fmt.Sprintf(key, split[0])
@@ -106,7 +106,7 @@ LOOP:
 		} else if flag == "n" {
 			fmt.Println("please input your config:([isBrigdeNode] [NodeId] [ip:port] ")
 			//put命令，传上下文进去,指定一个超时时间
-			ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 120)
+			ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*60)
 			//str := `[{"path":"/Users/wangzhiyuan/logs/s4.log","topic":"web_log"},{"path":"/Users/wangzhiyuan/logs/web.log","topic":"web_log"}]`
 			//str := `[{"first":"yes","id":"1","address":"127.0.0.1:8001"}]`
 			var isBrigeNode string
@@ -142,7 +142,7 @@ func RegisterNodeToEtcd(n *models.Node) (err error) {
 	//fmt.Println(split[0])
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{endpoints},
-		DialTimeout: 180 * time.Second,
+		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
 		fmt.Println("connect to etcd failed, err:", err)
@@ -153,7 +153,7 @@ func RegisterNodeToEtcd(n *models.Node) (err error) {
 	if err != nil {
 		logrus.Errorf("etcd: marshal %v err:%v.", n, err)
 	}
-	nodeCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 180)
+	nodeCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 	defer cancelFunc()
 	key := "node_exist_conf"
 	_, err = client.Put(nodeCtx, key, n.Addr)
@@ -173,14 +173,14 @@ func DeleteNodeFromEtcd(n *models.Node) (err error) {
 	//fmt.Println(split[0])
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{endpoints},
-		DialTimeout: 180 * time.Second,
+		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
 		fmt.Println("connect to etcd failed, err:", err)
 		return
 	}
 	defer client.Close()
-	nodeCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second * 180)
+	nodeCtx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 	defer cancelFunc()
 	//key := "node_exist_conf"
 	//_, err = client.Delete(nodeCtx, key)
@@ -193,24 +193,24 @@ func DeleteNodeFromEtcd(n *models.Node) (err error) {
 	return
 }
 
-//func main2() {
-//	cli, err := clientv3.New(clientv3.Config{
-//		Endpoints:   []string{"localhost:2379"},
-//		DialTimeout: time.Second * 5,
-//	})
-//	if err != nil {
-//		fmt.Println("link to etcd error :", err)
-//		return
-//	}
-//	defer cli.Close()
-//
-//	//watch
-//	watchCh := cli.Watch(context.Background(), "s4")
-//	//检测到key的值变化，或者key删除了,通过通道传递消息
-//	for wresp := range watchCh {
-//		//通道没有值的话就阻塞了
-//		for _, evt := range wresp.Events {
-//			fmt.Printf("type:%s key:%s value:%s.\n", evt.Type, evt.Kv.Key, evt.Kv.Value)
-//		}
-//	}
-//}
+func main2() {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"localhost:2379"},
+		DialTimeout: time.Second * 5,
+	})
+	if err != nil {
+		fmt.Println("link to etcd error :", err)
+		return
+	}
+	defer cli.Close()
+
+	//watch
+	watchCh := cli.Watch(context.Background(), "s4")
+	//检测到key的值变化，或者key删除了,通过通道传递消息
+	for wresp := range watchCh {
+		//通道没有值的话就阻塞了
+		for _, evt := range wresp.Events {
+			fmt.Printf("type:%s key:%s value:%s.\n", evt.Type, evt.Kv.Key, evt.Kv.Value)
+		}
+	}
+}
